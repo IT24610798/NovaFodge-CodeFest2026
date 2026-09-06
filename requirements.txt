@@ -1,0 +1,8 @@
+﻿pymupdf
+python-docx
+chromadb
+voyageai
+openai
+streamlit
+rank-bm25
+python-dotenv
