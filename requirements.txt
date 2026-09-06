@@ -5,4 +5,4 @@ voyageai
 openai
 streamlit
 rank-bm25
-python-dotenv
+python-dotenv==1.2.3
