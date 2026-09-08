@@ -13,8 +13,7 @@ client = OpenAI(
 # Try these models in order - if the first is overloaded, fall back to the next
 FALLBACK_MODELS = [
     "google/gemma-4-31b-it:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "nex-agi/nex-n2.5-mini:free",
+    "openrouter/free",
 ]
 
 
@@ -26,6 +25,7 @@ def call_llm(prompt: str, max_retries: int = 2) -> str:
                     model=model,
                     messages=[{"role": "user", "content": prompt}],
                 )
+                print(f"(Answered by: {model})")
                 return response.choices[0].message.content
             except RateLimitError:
                 wait_time = (attempt + 1) * 5
