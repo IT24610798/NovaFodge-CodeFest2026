@@ -1,6 +1,7 @@
 import os
+import time
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 
 load_dotenv()
 
@@ -9,13 +10,32 @@ client = OpenAI(
     api_key=os.environ["OPENROUTER_API_KEY"],
 )
 
+# Try these models in order - if the first is overloaded, fall back to the next
+FALLBACK_MODELS = [
+    "google/gemma-4-31b-it:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "nex-agi/nex-n2.5-mini:free",
+]
 
-def call_llm(prompt: str, model: str = "google/gemma-4-31b-it:free") -> str:
-    response = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return response.choices[0].message.content
+
+def call_llm(prompt: str, max_retries: int = 2) -> str:
+    for model in FALLBACK_MODELS:
+        for attempt in range(max_retries):
+            try:
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                return response.choices[0].message.content
+            except RateLimitError:
+                wait_time = (attempt + 1) * 5
+                print(f"{model} rate limited, waiting {wait_time}s...")
+                time.sleep(wait_time)
+            except Exception as e:
+                print(f"{model} failed with error: {e}")
+                break  # try the next model instead of retrying this one
+
+    raise Exception("All fallback models failed.")
 
 
 if __name__ == "__main__":

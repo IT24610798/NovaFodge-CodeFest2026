@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import voyageai
 import chromadb
 from src.search.sample_data import SAMPLE_CHUNKS
+from src.utils.retry import retry_on_rate_limit
 
 load_dotenv()
 
@@ -35,6 +36,7 @@ class SemanticSearcher:
             documents=texts,
         )
 
+    @retry_on_rate_limit(max_retries=5, base_delay=2.0)
     def search(self, query: str, top_k: int = 3) -> list:
         # embed the QUESTION the same way we embedded the documents
         result = voyage_client.embed([query], model="voyage-3", input_type="query")
