@@ -64,9 +64,15 @@ def run(input_dir, limit=None, dry_run=False):
 
     all_documents = []
     parse_failures = []
+    skipped_illustrations = 0
 
     for path, source_type in files:
         filename = os.path.basename(path)
+
+        if filename.lower().startswith("atmo_"):
+            skipped_illustrations += 1
+            continue  # pure illustration plates (concept art), no text by design
+
         try:
             docs = load_document(path, source_type)
         except Exception as e:
@@ -79,7 +85,8 @@ def run(input_dir, limit=None, dry_run=False):
 
         all_documents.extend(docs)
 
-    print(f"Loaded {len(all_documents)} document pieces from {len(files) - len(parse_failures)} files.")
+    print(f"Skipped {skipped_illustrations} illustration-only images (atmo_ prefix, no text by design).")
+    print(f"Loaded {len(all_documents)} document pieces from {len(files) - len(parse_failures) - skipped_illustrations} files.")
     print(f"{len(parse_failures)} files failed to parse.")
 
     all_chunks = chunk_documents(all_documents)
@@ -95,8 +102,6 @@ def run(input_dir, limit=None, dry_run=False):
         embed_and_store_chunks(all_chunks)
 
     return all_chunks
-
-
 def write_limitations_log(parse_failures, path="docs/limitations.md"):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "a", encoding="utf-8") as f:
