@@ -28,11 +28,22 @@ Full filenames are preserved in the raw log below. *(Note: this matters more for
 for our 1C system it mainly affects questions that depend on purely visual details with no
 accompanying text description — e.g. several `1a_*` questions in `sample_questions.json`.)*
 
-## 3. [Add: any agent-loop limitations from Person 2's testing — e.g. cases where reflection
-stops too early, or reformulated queries aren't different enough from the first search]
+## 3. Agent-loop limitations
 
-## 4. [Add: any answer-synthesis limitations from Person 3 — e.g. how contradicting sources are
-currently handled, and where that handling is incomplete]
+The reflection step depends on a separate LLM call and requires the response to follow the
+expected `SUFFICIENT` and `NEW_QUERY` format. If the LLM is unavailable, rate-limited, or
+returns malformed output, the agent cannot complete its search loop. The loop is also capped at
+three iterations by default, so a question requiring more chained lookups may stop before it
+has enough evidence.
+
+## 4. Answer-synthesis limitations
+
+The final answer is generated only from the chunks retrieved during the current search. The
+answer prompt tells the model to use only that context and acknowledge missing information, but
+the system does not yet apply an explicit contradiction-resolution policy or verify every claim
+against a source. Conflicting documents may therefore be reported incompletely or resolved
+incorrectly by the LLM. During testing, OpenRouter HTTP 401 errors prevented reflection and
+answer synthesis even when real archive chunks were retrieved successfully.
 
 ---
 
