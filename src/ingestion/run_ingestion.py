@@ -1,11 +1,3 @@
-"""
-run_ingestion.py — the one script that runs the whole pipeline.
-
-Usage:
-    python src/ingestion/run_ingestion.py --input data/raw --limit 5 --dry-run
-    python src/ingestion/run_ingestion.py --input data/raw
-"""
-
 import argparse
 import os
 from datetime import datetime
@@ -21,13 +13,7 @@ SUPPORTED_EXTS = {".pdf", ".docx", ".txt", ".md", ".jpg", ".jpeg", ".png"}
 
 
 def collect_files(root_dir):
-    """Walk the directory. source_type = the top-level folder name
-    directly under root_dir (codex, wiki, chronicles, ephemera, images).
-    Skips files sitting directly in root_dir (like README.txt).
-    Only dedupes .docx/.pdf pairs in chronicles/codex, where they're
-    confirmed identical content — NOT in ephemera, where matching
-    filenames can be completely different documents (verified by hand)."""
-    DEDUPE_FOLDERS = {"chronicles", "codex"}
+    
     seen_stems = set()
     files = []
 

@@ -1,9 +1,3 @@
-"""
-embed_and_store.py — turns chunks into "fingerprints" (embeddings) and
-files them in the card catalog (ChromaDB).
-
-"""
-
 import os
 import time
 import voyageai
@@ -50,16 +44,7 @@ def embed_with_retry(voyage, texts, max_retries=5):
 
 
 def embed_and_store_chunks(chunks, log_file="ingestion_failures.log"):
-    """
-    chunks: list of dicts as produced by chunker.chunk_documents()
-    Embeds them in batches and upserts into Chroma.
-
-    Resume-safe: chunks whose id already exists in the collection are
-    skipped, so re-running this after a partial failure only processes
-    what's still missing  no wasted tokens, no duplicate entries.
-
-    Failures are logged, not silently swallowed  this feeds limitations.md.
-    """
+    
     voyage = get_voyage_client()
     collection = get_chroma_collection()
 

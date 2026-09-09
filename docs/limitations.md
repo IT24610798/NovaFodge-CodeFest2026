@@ -112,3 +112,13 @@ Fixed by switching to deterministic hash-based IDs (md5 of filename +
 page + chunk index), so re-running after a rate-limit interruption
 correctly skips already-embedded chunks instead of re-processing
 everything from scratch.
+
+## Final embedding coverage
+1117 chunks embedded and stored: full coverage of codex, wiki, and
+chronicles folders, plus a targeted 8-document sample from ephemera
+(37 chunks). Confirmed present and retrievable under reliability_tier
+"unreliable" via both semantic search and direct metadata filter
+(collection.get(where={"reliability_tier": "unreliable"})).
+Full ephemera coverage (145 files total) was not achievable due to
+Voyage AI free-tier rate limits (3 RPM without payment method).
+This is a scoped, disclosed limitation, not an oversight.

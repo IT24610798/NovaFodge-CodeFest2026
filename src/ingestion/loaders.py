@@ -1,12 +1,3 @@
-"""
-loaders.py — parses every supported file type and attaches metadata
-(filename, source_type, reliability_tier) in one place.
-
-This replaces parsers.py and reliability_tags.py entirely — keeping
-parsing logic and reliability tagging together avoids two files
-disagreeing about the same document.
-"""
-
 import os
 from pypdf import PdfReader
 from pdf2image import convert_from_path
@@ -28,7 +19,7 @@ def load_pdf(filepath):
         text = page.extract_text() or ""
         text = text.strip()
 
-        if len(text) < 20:  # basically empty -> likely a scanned page
+        if len(text) < 20:  # basically empty - likely a scanned page
             images = convert_from_path(
                 filepath, first_page=i + 1, last_page=i + 1,
                 poppler_path=POPPLER_PATH
@@ -60,7 +51,7 @@ def load_docx(filepath):
 
 
 def load_text(filepath):
-    """TXT and MD files — read as-is, keep markdown syntax (headers carry meaning)."""
+    """TXT and MD files  read as-is, keep markdown syntax (headers carry meaning)."""
     with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
         text = f.read().strip()
     return [{"text": text, "page_number": None}]
@@ -80,7 +71,7 @@ def get_reliability_tier(source_type):
         "wiki": "reference",
         "chronicles": "narrative",
         "ephemera": "unreliable",
-        "images": "unreliable",  # no author context on standalone plates — treat cautiously
+        "images": "unreliable",  # no author context on standalone plates  treat cautiously
     }.get(source_type, "unknown")
 
 

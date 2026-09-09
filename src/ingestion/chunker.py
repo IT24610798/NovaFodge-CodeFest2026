@@ -1,10 +1,3 @@
-"""
-chunker.py  splits document text into smaller overlapping chunks
-("index cards" in the analogy).
-Takes the output of loaders.load_document() directly — each item already
-has text, filename, source_type, reliability_tier, and page_number attached.
-"""
-
 import hashlib
 
 def chunk_text(text, chunk_size=800, overlap=100):
