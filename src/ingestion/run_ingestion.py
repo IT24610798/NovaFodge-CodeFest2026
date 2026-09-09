@@ -5,11 +5,12 @@ from datetime import datetime
 from dotenv import load_dotenv
 load_dotenv()
 
-from loaders import load_document
-from chunker import chunk_documents
-from embed_and_store import embed_and_store_chunks
+from src.ingestion.loaders import load_document
+from src.ingestion.chunker import chunk_documents
+from src.ingestion.embed_and_store import embed_and_store_chunks
 
 SUPPORTED_EXTS = {".pdf", ".docx", ".txt", ".md", ".jpg", ".jpeg", ".png"}
+DEDUPE_FOLDERS = {"codex" , "wiki" , "chronicles"}
 
 
 def collect_files(root_dir):

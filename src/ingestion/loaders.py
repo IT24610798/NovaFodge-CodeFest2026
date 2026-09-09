@@ -5,9 +5,11 @@ from docx import Document
 from PIL import Image
 import pytesseract
 
-# Windows doesn't add these to PATH automatically during install.
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-POPPLER_PATH = r"C:\Users\ranju\Desktop\Poppler\poppler-26.07.0\Library\bin"
+import shutil 
+if shutil.which("tesseract") is None:tess_path= os.environ.get("TESSERACT_CMD") 
+if tess_path: pytesseract.pytesseract.tesseract_cmd = tess_path 
+POPPLER_PATH = os.environ.get("POPPLER_PATH") 
+
 
 
 def load_pdf(filepath):

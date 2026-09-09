@@ -164,3 +164,12 @@ chronicles folders, plus a targeted 8-document sample from ephemera
 Full ephemera coverage (145 files total) was not achievable due to
 Voyage AI free-tier rate limits (3 RPM without payment method).
 This is a scoped, disclosed limitation, not an oversight.
+## Ingestion run — 2026-09-09T20:04:43
+
+### Files that failed to parse (0)
+- None.
+
+## Ingestion run — 2026-09-09T20:51:06
+
+### Files that failed to parse (0)
+- None.
