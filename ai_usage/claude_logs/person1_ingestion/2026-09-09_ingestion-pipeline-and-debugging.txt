@@ -1,0 +1,322 @@
+SLIIT CODEFEST 2026 — AI COMPETITION
+AI Usage Chat Log — Person 1 (Document Parsing & Vector Database Ingestion)
+Tool used: Claude (Anthropic)
+================================================================================
+
+[USER]
+(Uploaded: 1788708983593_AI_Competition_Challenge_Final.pdf — the official
+challenge document)
+
+I need your help for Codefest in SLIIT my team has 4 members and i have
+submit you the documents in the Context plz go through them and help me
+through the hackathon.
+We picked subtrack 1C agentic Search. We have a limited time and you have
+all the rules and necessary details in the context.
+we are planning to use Python, Voyage AI, ChromaDB, OpenRouter free models,
+Streamlit for demo. We have finished our GitHub repo. Work is also divide
+between 4 members
+Person 1 - handles parsing the documents and putting them into the vector
+database
+Person 2 - builds the actual search/reflect/search loop and connects the
+LLM
+Person 3 - builds the Streamlit UI
+Person 4 - testing, documentation, and keeping the AI usage log updated
+Please explain things step by step, one step at a time, and wait for me to
+say "done" before moving to the next part. Use simple language, I'm not
+super advanced with all these tools.
+My part is Person 1 Plz help me to nail this project.
+
+[ASSISTANT]
+Outlined Person 1's overall job (recon corpus, set up environment, write
+loaders for each file type, chunk text, embed with Voyage AI, store in
+ChromaDB, validate retrieval). Asked two clarifying questions: whether any
+code already existed, and whether the archive files had been downloaded
+yet.
+
+[USER]
+Answered: only explored the files so far, no code yet; archive not
+downloaded yet.
+
+[ASSISTANT]
+STEP 1: Get the archive and do a recon pass before coding. Flagged that the
+corpus is explicitly described as containing conflicting/unreliable
+sources, which matters for later metadata tagging. Asked the user to check
+file types, folder structure, and skim sample_questions.json.
+
+[USER]
+Folder structure matches the challenge doc; formats present are pdf, docx,
+txt, jpg, png.
+
+[ASSISTANT]
+Noted that jpg/png "simulated scans" likely need OCR, not just image
+description. Reminded user to skim sample_questions.json when possible
+(non-blocking).
+STEP 2: Set up Python environment — create venv, ingestion folder
+structure, .gitignore for venv/, empty requirements.txt to fill in later.
+
+[USER]
+Confirmed venv created and activated.
+
+[ASSISTANT]
+STEP 3: Install parsing libraries — pypdf, pdf2image, pytesseract,
+python-docx, Pillow, tqdm (pip) plus Tesseract OCR and Poppler as
+system-level installs (not pip packages). Gave OS-specific install
+instructions and a sanity-check snippet to confirm Tesseract is found by
+pytesseract.
+
+[USER]
+Confirmed done.
+
+[ASSISTANT]
+STEP 4: Write per-file-type loader functions. Explained the metadata plan
+(filename, source_type, page_number) needed for the agentic reflect step.
+Provided load_pdf() using pypdf + pdf2image + pytesseract with a
+per-page scanned-page detection heuristic (falls back to OCR when
+extracted text length < 20 chars).
+
+[USER]
+Noted they already had a parsers.py using PyMuPDF (whole-PDF, no
+per-page scan check) and asked whether to drop it in favor of the new
+per-page approach, or keep both.
+
+[ASSISTANT]
+Recommended keeping PyMuPDF (fewer dependencies — no poppler needed) but
+adopting the per-page OCR-fallback logic, since per-page detection is the
+right approach for this mixed corpus. Provided a merged load_pdf()
+implementation using fitz (PyMuPDF) + pytesseract only. Advised dropping
+pypdf and pdf2image from requirements.txt.
+
+[USER]
+Shared the corpus README verbatim: folder structure is chronicles/
+(novels), wiki/ (fan-wiki, markdown), codex/ (official lore, PDF/DOCX with
+plates), ephemera/ (in-world letters/ledgers/transcripts, explicitly
+flagged as containing unreliable in-world authors), images/ (standalone
+figure plates). Proposed a 3-tier reliability scheme (official / middle
+narrative / unreliable) and asked where wiki fits, and whether this tiering
+should inform the reflection/synthesis step.
+
+[ASSISTANT]
+Recommended a 4-tier scheme instead of 3: codex="official", wiki=
+"reference" (fan-compiled, non-authoritative but not flagged unreliable),
+chronicles="narrative" (novels, possible biased POV), ephemera=
+"unreliable" (per README warning). Explained that Person 1 should only
+attach reliability_tier as metadata on each chunk; the actual reasoning
+about how to weigh conflicting sources belongs in Person 2's reflect/
+synthesis prompt, not in retrieval. Recommended flagging this design split
+to Person 2 directly.
+
+[USER]
+Confirmed the 4-tier scheme was locked in, field renamed to
+reliability_tier, ready for DOCX/TXT/image loaders.
+
+[ASSISTANT]
+STEP 4b-4e: Provided load_docx() (paragraphs + tables, page_number=None),
+load_text() for .txt/.md (errors="ignore" to avoid crashing on bad
+characters), load_image() (Pillow + pytesseract OCR), and a router
+load_document() that dispatches by file extension and attaches filename/
+source_type/reliability_tier/page_number metadata via a
+get_reliability_tier() helper. Flagged images/ defaulting to "unreliable"
+as an assumption worth checking manually.
+
+[USER]
+Reported: OCR worked correctly on a scanned ephemera PDF (minor noise/
+line-spacing issues, deemed normal). Asked whether documents existing as
+both .docx and .pdf with identical content (e.g.
+the_annals_of_the_ashen_era) should be deduplicated or both ingested.
+
+[ASSISTANT]
+Explained duplicates would pollute top-k retrieval results and waste
+embedding tokens. Recommended preferring DOCX over PDF when content is
+confirmed identical (cleaner text, no OCR risk), with the PDF only kept if
+it contains extra content the DOCX lacks. Provided a
+find_duplicate_pdfs() helper based on matching filename stems across
+extensions. Asked the user to manually verify the annals pair wasn't just
+"similar" but truly identical, and to get a rough count of how many such
+pairs exist.
+
+[USER]
+Reported 11 duplicate docx+pdf pairs (4 chronicles, 3 codex, 4 ephemera).
+Chronicles/codex pairs confirmed identical. Flagged that ephemera pairs
+specifically needed extra scrutiny since that folder contains scans and
+transcriptions might not perfectly match the original.
+
+[ASSISTANT]
+Agreed ephemera needed separate handling — explained the specific risk
+(a DOCX "transcription" could silently omit or alter something present in
+a scanned original: stamps, marginalia, redactions, or an intentional
+in-world inconsistency). Gave a 3-way resolution guide: pure duplicate →
+drop PDF; DOCX missing scan detail → keep both, don't treat as duplicates;
+meaningfully conflicting → keep both and flag as a notable finding for the
+submission report. Recommended comparing DOCX text against the rendered
+PDF page image directly, not against noisy OCR output.
+
+[USER]
+Reported a major finding: letter_concerning_the_silent_choir.docx and .pdf
+are completely different documents that coincidentically share a filename
+stem — not duplicates at all. Fixed collect_files() so the dedupe rule only
+applies to chronicles and codex (the two folders actually verified as
+true duplicates); ephemera now keeps every filename match in both formats.
+
+[ASSISTANT]
+Confirmed this was a valuable finding worth including in the submission
+report's "what works, what doesn't, limitations" section. Recommended a
+follow-up sanity check: since one ephemera "duplicate" assumption had
+already broken, do at least a quick title/first-line check on the
+remaining 3 ephemera pairs rather than assuming they're safe.
+
+[USER]
+Confirmed the fix works end-to-end: 332 files total, ephemera keeps all
+versions per filename, chronicles/codex still correctly deduplicated.
+Re-checked letter_concerning_the_silent_choir specifically. Found a new
+edge case: petition_concerning_thorn_wraith exists in docx, pdf, AND txt —
+overlap not verified due to time constraints; flagged as a known
+limitation rather than guessing.
+
+[ASSISTANT]
+Endorsed documenting this as an honest limitation rather than guessing, and
+asked that Person 4 capture it explicitly in docs/limitations.md.
+STEP 5: Provided collect_files() (walks all 5 folders), apply_dedupe()
+(scoped by (source_type, stem) pair — specifically designed around the
+letter_concerning_the_silent_choir and petition_concerning_thorn_wraith
+discoveries so dedupe never cross-matches filenames from different
+folders), and build_document_list() (calls load_document() on every
+remaining file inside a try/except so one bad file can't crash the whole
+run, with failure counts/logging for visibility). Asked the user to run it
+end-to-end and report total counts and any parsing failures.
+
+[USER]
+Reported already having this exact logic built into run_ingestion.py
+(same scoped-dedupe design, same load_document + try/except pattern) and
+ran it full-scale with --dry-run to avoid maintaining two parallel
+pipelines. Result: 332 files found, 307 document pieces loaded from 278
+files, 54 files failed to parse, 4581 chunks produced, limitations log
+updated, embedding skipped (dry run).
+
+[ASSISTANT]
+Endorsed reusing one pipeline instead of forking a parallel script. Flagged
+that 54/332 (~16%) parse failures was too high to accept without
+investigation — likely a pattern rather than scattered corruption. Asked
+for the actual per-file error messages/types (not just the count) to
+diagnose: e.g. whether failures cluster by folder or file type, and
+listed common real causes (renamed .doc-as-.docx, encrypted PDFs, Tesseract
+path issues, corrupt zero-byte files) to check against.
+
+[USER]
+Reported the fix: full corpus re-run now clean — 332 files found, 55
+illustration images correctly identified and skipped via an "atmo_"
+filename prefix (not real parse failures), 0 real parse failures, 306
+document pieces, 4580 chunks produced.
+
+[ASSISTANT]
+Confirmed this was a good outcome and suggested a one-line note in
+limitations.md clarifying the atmo_ skips were intentional, not failures.
+Recommended reviewing the already-built chunking logic in run_ingestion.py
+rather than writing a parallel chunker, and asked (via structured
+questions) what chunking approach was in use and whether reliability_tier/
+page_number were present at the per-chunk level.
+
+[USER]
+Confirmed chunk-boundary overlap was working correctly (shared sentence
+appears at the end of one chunk and start of the next, avoiding facts
+being cut). Raised a concern: with fixed 800-char/100-overlap chunking, one
+chronicle novel alone produced 645 chunks — worried this could flood
+retrieval with many near-duplicate narrative fragments for
+character/plot questions. Asked whether chunk size should be scaled by
+source_type or left as one fixed size until Person 2 reports retrieval
+problems.
+
+[ASSISTANT]
+Recommended scaling chunk size by source_type proactively rather than
+waiting, for two reasons: (1) narrative prose needs more surrounding
+context per chunk than dense reference material, so one fixed size can't
+serve both well; (2) waiting would force Person 2 to re-test their loop
+against a changed index later, which is more expensive than deciding now.
+Noted that changing chunk size doesn't change total Voyage token cost —
+same text, differently sized pieces. Proposed a CHUNK_CONFIG dict with
+larger chunks/overlap for chronicles (1500/200), smaller for codex
+(500/75) and wiki (600/75), keeping ephemera/images at the existing
+default (800/100). Suggested validating by re-checking the same chronicle
+novel's new chunk count after the change (expecting roughly half of 645).
+
+[USER]
+Confirmed done.
+
+[ASSISTANT]
+STEP 7: Set up Voyage AI embedding + ChromaDB storage. Covered API key
+handling via .env + .gitignore (per the competition's explicit security
+warning about leaked keys in commit history), installing voyageai/
+chromadb/python-dotenv, and provided embed_and_store() — batches of 100
+chunks, calls Voyage's embed() with input_type="document", stores vectors
++ metadata (filename, source_type, reliability_tier, page_number with -1
+as a null-safe sentinel) into a persistent ChromaDB collection. Explained
+the input_type="document" vs "query" distinction that Person 2 must match
+on the query side, and noted voyage-4-large/voyage-4-lite share a vector
+space (a possible later cost optimization for Person 2). Asked for total
+chunks stored, run time, and a real test-query sanity check using an
+actual sample_questions.json question.
+
+[USER]
+Reported already having a working, tested embed_and_store.py wired to
+their chunker's nested-metadata output format, with the document/query
+input_type distinction already handled. Chose to run the real embedding
+with their existing script rather than rewrite it, citing limited time and
+risk of breaking a working pipeline before the deadline.
+
+[ASSISTANT]
+Endorsed not touching a working pipeline this close to deadline.
+Suggested using the waiting time productively: pre-reading a few
+sample_questions.json questions (one single-document lookup type, one
+cross-document type) to have retrieval-quality expectations ready once
+embedding finished.
+
+[USER]
+Reported embedding finished: 1603 chunks stored (codex/wiki/chronicles),
+but 2360 more chunks hit Voyage's free-tier rate limit and are still
+pending. Ran a real test query from sample_questions.json about the
+founding year of Gloamreach — retrieval correctly surfaced that the fact
+is disputed across sources (gloamreach.md and mournwatch.md both
+indicating disagreement) rather than hallucinating a false precise answer.
+Asked to proceed to handoff for Person 2.
+
+[ASSISTANT]
+Praised the query result but stopped the handoff: flagged that 2360/3963
+pending chunks (over half the corpus) meant ephemera — the
+"unreliable narrator" tier central to the sub-track — was almost certainly
+entirely missing from the vector database, since it was processed last.
+Explained this would silently undermine the whole 1C design if Person 2
+started building against an incomplete index. Recommended: (1) add a
+resume check using existing ChromaDB IDs so already-embedded chunks aren't
+redundantly re-embedded, (2) add exponential-backoff retry around the
+Voyage embed call (per the competition appendix's explicit warning about
+free-tier 429 rate limits), (3) re-run to completion and confirm
+collection.count() matches the full expected chunk total (~4580), (4) do a
+targeted ephemera spot-check confirming reliability_tier="unreliable"
+chunks retrieve correctly before considering handoff safe.
+
+[USER]
+Confirmed ready to continue.
+
+[ASSISTANT]
+STEP 8: Provided a final validation checklist before handoff — confirm
+total chunk count matches expectations, print per-source_type and
+per-reliability_tier counts to catch any silently dropped folder, run an
+ephemera-specific spot-check query, run several more sample_questions.json
+queries (including cross-document ones) beyond the single one already
+tested, and scan for empty/junk chunks under ~10 characters. Provided a
+docs/ingestion_handoff.md template summarizing: ChromaDB collection name/
+path/total count, the input_type="document" vs "query" embedding
+distinction Person 2 must follow, the full metadata schema per chunk,
+the meaning and intended use of each reliability_tier value in Person 2's
+reflect/synthesis prompt, known limitations (petition_concerning_
+thorn_wraith's unresolved 3-format overlap, plus any parse edge cases),
+and the final CHUNK_CONFIG values used. Asked the user to run the
+checklist, fill in real numbers, and confirm before considering Person 1's
+part complete.
+
+[USER]
+Requested the full chat exported as a text file for inclusion in the
+competition submission (AI Usage Disclosure / chat log requirement).
+
+================================================================================
+END OF LOG
+================================================================================

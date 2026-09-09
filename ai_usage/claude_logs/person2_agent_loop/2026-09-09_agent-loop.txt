@@ -1,0 +1,156 @@
+I need your help for Codefest in SLIIT my team has 4 members and i have submit you the documents in the Context plz go through them and help me through the hackathon. 
+
+We picked subtrack 1C agentic Search. We have a limited time and you have all the rules and necessary details in the context.
+
+we are planning to use Python, Voyage AI, ChromaDB, OpenRouter free models, Streamlit for demo. We have finished our GitHub repo. Work is also divide between 4 members
+
+Person 1 - handles parsing the documents and putting them into the vector database
+Person 2 - builds the actual search/reflect/search loop and connects the LLM
+Person 3 - builds the Streamlit UI
+Person 4 - testing, documentation, and keeping the AI usage log updated
+
+Please explain things step by step, one step at a time, and wait for me to say "done" before moving to the next part. Use simple language, I'm not super advanced with all these tools.
+
+My part is Person 2 Plz help me to nail this project.
+
+Got it — I read through the challenge doc. Quick summary of what matters for your role:
+
+Sub-track 1C is about building an assistant that searches iteratively: search → look at what it found → decide if it's enough → search again if not → repeat → answer.
+The corpus is called the Ashen Era Archive: 415 documents, ~1,277 pages (novels, wiki, codexes, ephemera), deliberately interconnected with some unreliable/conflicting sources.
+Your job (Person 2) is the brain of the whole system: the loop that decides where to look, reflects on what it found, and knows when to stop.
+Judges specifically reward this sub-track for showing real iterative reasoning, not a single search-and-answer. That's the main thing to nail.
+
+I'll walk you through building your part in small steps, and you say "done" when you're ready for the next one. No code yet — first I want to make sure the design is solid in your head, since judges will grill each member individually on this.
+
+Step 1: Understand the shape of the loop you're building
+
+Think of it like this, in plain English:
+
+User asks a question.
+Search — send the question (or a refined version of it) to the vector database (Person 1's part) and get back some text chunks.
+Reflect — ask the LLM: "Given what we found so far, can I fully answer the question? If not, what's missing, and what should I search for next?"
+If not enough info → go back to step 2 with the new search query.
+If enough info → generate final answer, ideally showing which sources/chunks it used.
+Have a safety limit (e.g. max 4-5 loops) so it never runs forever.
+
+The key design decision that makes this feel "agentic" rather than fake: the LLM itself must decide when to stop and what to search next — not a fixed number of searches every time. That's literally what the judges are told to look for.
+
+Does this match what you had in mind? Once you're comfortable with this picture, say "done" and we'll move to Step 2: designing the exact data you'll pass between search and reflect steps (what "state" your loop keeps track of).
+
+I am planning to use hybrid search adding the both Meaning search semantic and the Word search based on keyword i think it is better. We are also have out git hub structure complete. If you have any suggestion to improve my part Plz help me with that.
+
+Hybrid search is a smart call for this specific corpus — here's the reasoning:
+
+Why hybrid fits the Ashen Era Archive specifically:
+The archive is an invented fantasy world, so it's packed with made-up proper nouns — character names, faction names, artifact names, place names. Pure semantic (embedding) search is great at "meaning" but can blur on exact names, especially rare or unusual ones, since the embedding model has never seen these invented words before and may not represent them distinctly. Keyword search (exact/fuzzy term matching) catches "Ashvael" or "the Cindered Accord" precisely, even when the surrounding meaning is ambiguous. Combining both gives you the best of both: semantic catches paraphrased questions, keyword catches exact-entity lookups.
+
+How this fits into the loop from Step 1:
+Your "search" step (step 2 in the loop) now does two searches instead of one, then merges them:
+
+Semantic search → ChromaDB, using the embedding (Voyage AI) → returns chunks by meaning.
+Keyword search → a term-matching method (e.g. BM25) → returns chunks by exact word overlap.
+Merge the two ranked lists into one combined ranking.
+
+The merging part — a heads up on complexity:
+ChromaDB doesn't do keyword/BM25 search natively — it's vector-only. So "hybrid" means running a separate keyword search (a simple library like rank_bm25, or ChromaDB's metadata where_document contains-filter as a lighter option) alongside your vector search, then combining the two ranked lists yourself. The standard simple way to merge two ranked lists fairly is called Reciprocal Rank Fusion (RRF) — it's a small formula, not a new system, so it won't eat much time.
+
+This is exactly the kind of decision judges want to see explained in docs/decisions.md — "we chose hybrid search because invented proper nouns break pure semantic embeddings" is a strong, specific insight (not generic).
+
+One thing worth checking with Person 1: whether they're planning to store the raw chunk text alongside the vectors in a way you can also feed into a keyword index — you'll need the plain text, not just embeddings, to run BM25.
+
+Your repo structure looks good, by the way — matches the recommended layout closely.
+
+Want to lock in hybrid search as part of your search step, and move to Step 2: designing the loop's "state" (what your loop remembers between search rounds)? Say "done" whenever you're ready.
+
+Here's a sample data file mimicking the style of the real Ashen Era Archive — invented names, overlapping facts across different "document types," and even a couple of deliberate inconsistencies (like the real corpus has), so you can test both your keyword search and later your reflect step on conflicting sources.
+
+A few things worth noticing in this sample data — I built it this way on purpose, not just for variety:
+
+Same entity, multiple document types (novel, wiki, codex, ephemera) — this mirrors the real archive's structure and gives you something to test hybrid search against realistically.
+A deliberate inconsistency: the codex says the Cindered Accord's last verified owner was Ashvael, but a trial transcript ephemera claims it passed to Deira Thorne, and a wiki page flags this exact conflict. This is exactly the kind of "sources disagree" situation your reflect step will eventually need to handle — good to have it in your test data now.
+A multi-hop fact chain: Veyr Hold's fall → trade route disruption → Salt Coast grain shortage, spread across three different chunks. This tests whether your search can connect facts across documents, not just find one obvious match.
+
+To use it in your BM25 test from before:
+
+python
+from sample_data import SAMPLE_CHUNKS
+from your_module import KeywordSearcher  # wherever you saved the class
+
+searcher = KeywordSearcher(SAMPLE_CHUNKS)
+results = searcher.search("Cindered Accord Ashvael", top_k=5)
+for r in results:
+    print(r["id"], round(r["keyword_score"], 2), "-", r["text"][:60])
+
+Try running your BM25 searcher against this and see if the ranking makes sense (the Ashvael/Cindered Accord chunks should float to the top for that query). Once it's working, say "done" and we'll move to Step 5b: the semantic search wrapper.
+
+Sample data
+PY 
+
+It worked
+
+Great — that's exactly the loop-closing moment you want: real signal coming out of your own code. Let's use this result as a mini lesson.
+
+Why these particular chunks floated up (and it's normal):
+
+Look closely — the ballad and the courtroom quote outranked the codex artifact plate, even though the codex explicitly mentions both "Cindered" and "Accord" and "Ashvael." That's BM25 behaving exactly as designed, for two reasons:
+
+Term rarity (IDF): BM25 rewards words that are rare across your whole chunk set more than words that appear everywhere. If "Ashvael" and "Accord" both show up in many chunks (novel, wiki, codex, ballad), their rarity score drops, so a chunk doesn't get a huge boost just for containing them.
+Document length normalization: BM25 slightly favors shorter chunks that pack the query terms densely, over longer chunks where the same terms are a smaller fraction of the total text. Your ballad chunk is short and dense with "Ashvael," so it scores competitively even without mentioning "Accord" explicitly.
+
+This is not a bug — it's the actual tradeoff of pure keyword search, and it's a good, honest thing to note in docs/decisions.md: "BM25 alone sometimes under-ranks the most semantically central chunk when key terms are common across the corpus — this is a core reason we combine it with semantic search rather than relying on it alone." That's a real, specific insight judges want to see, not a hand-wave.
+
+This also previews exactly why Step 5b matters: semantic search won't have this bias — it should recognize that the codex artifact chunk is conceptually the most relevant, even if BM25 under-ranks it by raw word statistics. Fusing both is what corrects this.
+
+Step 5b: Semantic search (Voyage AI + ChromaDB)
+
+The core idea: instead of matching exact words, you convert the query into a vector (a list of numbers capturing "meaning") using Voyage AI's embedding model, then ask ChromaDB to find chunks whose vectors are closest to it.
+
+Key detail from the challenge doc, worth remembering: all Voyage voyage-4 series models share the same vector space. That means Person 1 can embed the full corpus with the stronger voyage-4-large model, while your search step embeds each incoming query with the cheaper, faster voyage-4-lite — no mismatch, no re-indexing needed. This saves your team API cost and time on every single search call, since queries are embedded far more often than documents.
+
+Here's the wrapper:
+
+python
+import os
+import voyageai
+import chromadb
+
+# --- one-time setup (do this once when your app starts) ---
+voyage_client = voyageai.Client(api_key=os.environ["VOYAGE_API_KEY"])
+chroma_client = chromadb.PersistentClient(path="./chroma_db")  # match Person 1's path
+collection = chroma_client.get_collection("ashen_era_archive")  # match their collection name
+
+
+def semantic_search(query: str, top_k: int = 10) -> list[dict]:
+    """
+    Embeds the query with voyage-4-lite, then asks ChromaDB for the
+    closest matching chunks by vector similarity.
+    """
+    query_embedding = voyage_client.embed(
+        texts=[query],
+        model="voyage-4-lite",
+        input_type="query",  # tells Voyage this is a search query, not a document
+    ).embeddings[0]
+
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=top_k,
+    )
+
+    # ChromaDB returns parallel lists (ids, documents, distances) — zip them together
+    output = []
+    for chunk_id, text, distance in zip(
+        results["ids"][0], results["documents"][0], results["distances"][0]
+    ):
+        output.append({
+            "id": chunk_id,
+            "text": text,
+            "semantic_score": 1 - distance,  # convert distance to a similarity-like score
+        })
+    return output
+
+Two things to confirm with Person 1 before this will run:
+
+The exact ChromaDB path and collection name they're using (placeholders above — swap them in).
+Whether they embedded documents with input_type="document" — Voyage's models expect a matching query vs document input type pair for best accuracy, so check this isn't mismatched on their end.
+
+Try this once you can point it at Person 1's real (or even a small test) ChromaDB collection. Once you get sensible chunks back, say "done" and we'll move to Step 5c: merging BM25 + semantic results with Reciprocal Rank Fusion — the piece that actually makes this "hybrid."
