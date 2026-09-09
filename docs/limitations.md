@@ -28,11 +28,22 @@ Full filenames are preserved in the raw log below. *(Note: this matters more for
 for our 1C system it mainly affects questions that depend on purely visual details with no
 accompanying text description — e.g. several `1a_*` questions in `sample_questions.json`.)*
 
-## 3. [Add: any agent-loop limitations from Person 2's testing — e.g. cases where reflection
-stops too early, or reformulated queries aren't different enough from the first search]
+## 3. Agent-loop limitations
 
-## 4. [Add: any answer-synthesis limitations from Person 3 — e.g. how contradicting sources are
-currently handled, and where that handling is incomplete]
+The reflection step depends on a separate LLM call and requires the response to follow the
+expected `SUFFICIENT` and `NEW_QUERY` format. If the LLM is unavailable, rate-limited, or
+returns malformed output, the agent cannot complete its search loop. The loop is also capped at
+three iterations by default, so a question requiring more chained lookups may stop before it
+has enough evidence.
+
+## 4. Answer-synthesis limitations
+
+The final answer is generated only from the chunks retrieved during the current search. The
+answer prompt tells the model to use only that context and acknowledge missing information, but
+the system does not yet apply an explicit contradiction-resolution policy or verify every claim
+against a source. Conflicting documents may therefore be reported incompletely or resolved
+incorrectly by the LLM. During testing, OpenRouter HTTP 401 errors prevented reflection and
+answer synthesis even when real archive chunks were retrieved successfully.
 
 ---
 
@@ -173,3 +184,105 @@ This is a scoped, disclosed limitation, not an oversight.
 
 ### Files that failed to parse (0)
 - None.
+
+## Ingestion run — 2026-09-09T22:00:03
+
+### Files that failed to parse (47)
+- plate_00_location_marrowwatch.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_01_location_emberdeep.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_02_conflict_the_accord_of_mournthrone.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_03_location_crookgate_keep.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_04_artifact_the_thrice_bound_edge.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_05_location_embercrag_fortress.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_06_location_hollowreach.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_07_artifact_the_thrice_bound_lantern.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_08_creature_weeping_lurker.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_09_location_greyfell_citadel.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_10_creature_marsh_revenant.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_11_location_mournwatch.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_12_location_thorncairn.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_13_artifact_the_cinder_wrought_aegis.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_14_creature_thorn_wraith.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- ballad_concerning_crookgate_keep.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- ballad_concerning_the_sceptre_of_final_winter.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- contract_concerning_halvard_sablewood.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- contract_concerning_marsh_revenant.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- contract_concerning_the_cinder_wrought_aegis.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- field_report_concerning_cerys_sablewood_the_ashen.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- interrogation_record_concerning_ashreach.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- interrogation_record_concerning_crookgate_keep.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- interrogation_record_concerning_greyfell_citadel.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- interrogation_record_concerning_hesper_wrenfield.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- letter_concerning_the_accord_of_mournthrone.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- muster_roll_concerning_hollowvale.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- petition_concerning_halvard_cindervale.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- petition_concerning_morwenna_morvain.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- sermon_concerning_fenthrone.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- sermon_concerning_marsh_revenant.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- sermon_concerning_salt_blind_leviathan.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- plate_00_location_marrowwatch.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_01_location_emberdeep.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_02_conflict_the_accord_of_mournthrone.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_03_location_crookgate_keep.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_04_artifact_the_thrice_bound_edge.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_05_location_embercrag_fortress.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_06_location_hollowreach.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_07_artifact_the_thrice_bound_lantern.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_08_creature_weeping_lurker.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_09_location_greyfell_citadel.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_10_creature_marsh_revenant.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_11_location_mournwatch.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_12_location_thorncairn.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_13_artifact_the_cinder_wrought_aegis.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_14_creature_thorn_wraith.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+
+## Ingestion run — 2026-09-09T22:00:14
+
+### Files that failed to parse (47)
+- plate_00_location_marrowwatch.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_01_location_emberdeep.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_02_conflict_the_accord_of_mournthrone.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_03_location_crookgate_keep.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_04_artifact_the_thrice_bound_edge.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_05_location_embercrag_fortress.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_06_location_hollowreach.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_07_artifact_the_thrice_bound_lantern.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_08_creature_weeping_lurker.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_09_location_greyfell_citadel.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_10_creature_marsh_revenant.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_11_location_mournwatch.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_12_location_thorncairn.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_13_artifact_the_cinder_wrought_aegis.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_14_creature_thorn_wraith.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- ballad_concerning_crookgate_keep.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- ballad_concerning_the_sceptre_of_final_winter.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- contract_concerning_halvard_sablewood.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- contract_concerning_marsh_revenant.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- contract_concerning_the_cinder_wrought_aegis.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- field_report_concerning_cerys_sablewood_the_ashen.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- interrogation_record_concerning_ashreach.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- interrogation_record_concerning_crookgate_keep.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- interrogation_record_concerning_greyfell_citadel.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- interrogation_record_concerning_hesper_wrenfield.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- letter_concerning_the_accord_of_mournthrone.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- muster_roll_concerning_hollowvale.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- petition_concerning_halvard_cindervale.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- petition_concerning_morwenna_morvain.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- sermon_concerning_fenthrone.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- sermon_concerning_marsh_revenant.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- sermon_concerning_salt_blind_leviathan.scan.pdf: PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+- plate_00_location_marrowwatch.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_01_location_emberdeep.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_02_conflict_the_accord_of_mournthrone.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_03_location_crookgate_keep.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_04_artifact_the_thrice_bound_edge.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_05_location_embercrag_fortress.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_06_location_hollowreach.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_07_artifact_the_thrice_bound_lantern.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_08_creature_weeping_lurker.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_09_location_greyfell_citadel.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_10_creature_marsh_revenant.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_11_location_mournwatch.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_12_location_thorncairn.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_13_artifact_the_cinder_wrought_aegis.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+- plate_14_creature_thorn_wraith.png: TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
