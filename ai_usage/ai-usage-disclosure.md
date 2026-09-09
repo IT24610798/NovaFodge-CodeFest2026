@@ -1,7 +1,5 @@
 # AI Usage Disclosure
 
-# AI Usage Disclosure
-
 Per the competition's AI Usage Policy: honest disclosure of every tool used carries no penalty.
 Omitting a tool that was actually used is a misrepresentation risk. This document is the
 plain-English summary; the full raw conversation exports live alongside it in `ai_usage/`
@@ -13,7 +11,7 @@ plain-English summary; the full raw conversation exports live alongside it in `a
 |---|---|---|
 | Claude (Anthropic) | Person 4 | Understanding the competition rules/rubric, organizing documentation (`docs/decisions.md`, `docs/limitations.md`), drafting the AI-usage disclosure structure, testing methodology |
 | [ChatGPT / other] | Person 4 | [Fill in — e.g. "Initial walkthrough of the ingestion pipeline and agent-loop concepts before code was reviewed"] |
-| [Tool used by Person 1] | Person 1 | [Fill in — e.g. document parsing/OCR code, chunking logic] |
+| Claude (Anthropic) | Person 1 | Building the ingestion pipeline end-to-end: document parsers (PDF with OCR fallback, DOCX, TXT, MD, images), chunking logic, reliability-tier tagging, Voyage AI embedding + ChromaDB storage, environment setup (Tesseract, Poppler), and debugging real errors hit during testing |
 | [Tool used by Person 2] | Person 2 | [Fill in — e.g. agent loop / reflection prompt design] |
 | [Tool used by Person 3] | Person 3 | [Fill in — e.g. Streamlit UI scaffolding] |
 
@@ -37,7 +35,37 @@ logs as an appendix rather than delete them, since they're real evidence of iter
 (see the resume-logic bug in `docs/decisions.md`) — the AI's first suggestion was to rewrite
 them from scratch, which we rejected in favor of preserving them as evidence.
 
-**Person 1 / 2 / 3 — [fill in with real examples]:**
+**Person 1 (ingestion) — examples of real back-and-forth and corrections:**
+- The corpus README described folder-based reliability categories ("official," "fan-wiki,"
+  "narrative," "unreliable in-world authors"). The AI's first suggestion merged the wiki folder
+  into the "official" tier; this was pushed back on and corrected to a separate "reference" tier,
+  since the README specifically distinguished fan-written wiki content from official codex
+  records — treating them the same would have lost a real distinction the corpus was designed
+  to test.
+- Found that some documents existed as both `.docx` and `.pdf` with identical content
+  (`chronicles`/`codex` folders) and initially applied a blanket rule to always prefer `.docx`
+  and drop the `.pdf` duplicate. Before applying this corpus-wide, manually checked a same-named
+  pair in the `ephemera` folder and discovered they were **completely different documents**
+  that only coincidentally shared a filename. The deduplication rule was corrected to apply
+  only to `chronicles`/`codex` (where pairs were manually verified identical), not `ephemera`
+  — a blanket AI-suggested rule would have silently deleted real, unique corpus content.
+- Hit a real bug where resume-after-failure logic (to avoid re-embedding already-stored chunks
+  after hitting Voyage AI's free-tier rate limit) never worked, because chunk IDs were randomly
+  generated (`uuid.uuid4()`) on every run, so no two runs ever produced matching IDs. Diagnosed
+  this by comparing a real "already stored" ID against a real "freshly generated" ID side by
+  side, confirmed the mismatch, and fixed it by switching to deterministic hash-based IDs
+  (filename + page + chunk index) so re-runs correctly resume instead of restarting from zero.
+- Encountered `TesseractNotFoundError` and `PDFInfoNotInstalledError` on Windows (Tesseract and
+  Poppler installed but not on system PATH) — pasted the real tracebacks back to the AI, got a
+  fix (setting the tool paths explicitly in code), and verified the fix worked with a direct
+  sanity check (`pytesseract.get_tesseract_version()`) before moving on.
+- When 54 files failed to parse with "produced no text," did not accept the AI's first framing
+  of these as failures — manually checked the file list, confirmed they were all pure
+  illustration images (concept art with no printed text, correctly identified by OCR as
+  containing nothing to extract), and reclassified them in the code and in `limitations.md` as
+  an intentional skip rather than a parsing failure.
+
+**Person 2 / 3 — [fill in with real examples]:**
 For each, note at least one moment where the team pushed back on or corrected an AI suggestion.
 Example prompts to jog memory: "Did the AI suggest an approach we didn't use? Why not?" "Did we
 paste an actual error back and ask why it happened?" "Did we ask 'why X over Y' and then decide
