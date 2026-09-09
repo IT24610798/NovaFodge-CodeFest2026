@@ -1,4 +1,21 @@
-﻿.env
+
+.env
+*.env
+
+# corpus and vector db large, either already shared elsewhere or regenerable
+data/raw/
+data/chroma_db/
+data/processed/
+
+# python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# OS/editor junk
+.DS_Store
+.vscode/
 __pycache__/
 venv/
 *.pyc

@@ -1,8 +1,12 @@
-﻿pymupdf
+﻿pypdf
+pdf2image
+pytesseract
+Pillow
+tqdm
 python-docx
 chromadb
 voyageai
 openai
 streamlit
 rank-bm25
-python-dotenv
+python-dotenv==1.2.3
