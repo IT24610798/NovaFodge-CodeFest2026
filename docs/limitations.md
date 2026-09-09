@@ -67,3 +67,20 @@
 
 ### Files that failed to parse (0)
 - None.
+
+## Ingestion run — 2026-09-09T10:17:33
+
+### Files that failed to parse (0)
+- None.
+
+## Ingestion run — 2026-09-09T10:38:21
+
+### Files that failed to parse (0)
+- None.
+
+## Embedding rate limits
+Voyage AI free tier without a payment method is capped at 3 requests/minute.
+This meant a full 4580-chunk embedding run would take ~40 minutes just from
+rate limiting, not compute time. Prioritized codex/wiki/chronicles folders
+first (3963 chunks, ~officially the most load-bearing content), with
+ephemera embedding to follow as time allows.
