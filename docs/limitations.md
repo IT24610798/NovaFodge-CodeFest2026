@@ -84,3 +84,31 @@ This meant a full 4580-chunk embedding run would take ~40 minutes just from
 rate limiting, not compute time. Prioritized codex/wiki/chronicles folders
 first (3963 chunks, ~officially the most load-bearing content), with
 ephemera embedding to follow as time allows.
+## Ingestion run — 2026-09-09T11:35:31
+
+### Files that failed to parse (0)
+- None.
+
+## Ingestion run — 2026-09-09T11:39:08
+
+### Files that failed to parse (0)
+- None.
+
+## Ingestion run — 2026-09-09T11:42:52
+
+### Files that failed to parse (0)
+- None.
+
+## Ingestion run — 2026-09-09T11:46:53
+
+### Files that failed to parse (0)
+- None.
+
+## Embedding resume logic bug
+Initial embedding attempts used random UUIDs for chunk IDs, which meant
+resume-after-failure logic could never detect "already stored" chunks
+(new random IDs never matched old random IDs from a previous run).
+Fixed by switching to deterministic hash-based IDs (md5 of filename +
+page + chunk index), so re-running after a rate-limit interruption
+correctly skips already-embedded chunks instead of re-processing
+everything from scratch.
