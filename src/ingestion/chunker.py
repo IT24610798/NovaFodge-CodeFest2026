@@ -5,7 +5,7 @@ Takes the output of loaders.load_document() directly — each item already
 has text, filename, source_type, reliability_tier, and page_number attached.
 """
 
-import uuid
+import hashlib
 
 def chunk_text(text, chunk_size=800, overlap=100):
     """Split a block of text into overlapping chunks."""
@@ -31,7 +31,7 @@ def chunk_documents(documents, chunk_size=800, overlap=100):
         pieces = chunk_text(doc["text"], chunk_size=chunk_size, overlap=overlap)
         for i, piece in enumerate(pieces):
             chunk = {
-                "id": str(uuid.uuid4()),
+                "id": hashlib.md5(f"{doc['filename']}_{doc['page_number']}_{i}".encode()).hexdigest(),
                 "text": piece,
                 "metadata": {
                     "source": doc["filename"],
