@@ -1,6 +1,5 @@
 import re
 from rank_bm25 import BM25Okapi
-from src.search.sample_data import SAMPLE_CHUNKS
 
 
 class KeywordSearcher:
@@ -23,10 +22,3 @@ class KeywordSearcher:
         for chunk, score in scored_chunks[:top_k]:
             results.append({**chunk, "keyword_score": float(score)})
         return results
-
-
-if __name__ == "__main__":
-    searcher = KeywordSearcher(SAMPLE_CHUNKS)
-    results = searcher.search("Ashvael", top_k=5)
-    for r in results:
-        print(r["id"], "-", round(r["keyword_score"], 2), "-", r["text"][:60])
