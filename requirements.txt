@@ -1,4 +1,8 @@
-﻿pymupdf
+﻿pypdf
+pdf2image
+pytesseract
+Pillow
+tqdm
 python-docx
 chromadb
 voyageai
