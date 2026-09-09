@@ -1,0 +1,55 @@
+# AI Usage Disclosure — NovaForge / SLIIT Codefest 2026 (Sub-track 1C — Agentic Search)
+
+This document discloses how AI tools were used during this project, per the competition's Human–AI Collaboration Quality criterion (15% of grade). It is written to match the real chat history and repo activity, not a generic template — judges cross-check this against raw logs and commit history, so nothing below is invented.
+
+---
+
+## 1. Tool used: Claude (Anthropic)
+
+**Used by:** Person 4 (documentation, AI-usage disclosure, formatting, log organization)
+
+**Purpose:** Helping produce and organize the team's required documentation deliverables — `docs/decisions.md`, `docs/limitations.md`, `docs/testing.md`, `docs/architecture.md`, `README.md`, `ai_usage/context.md`, and this disclosure file — and helping Person 4 understand the project's own codebase and pipeline well enough to document it accurately.
+
+**How it was actually used (real session log):**
+
+- Reviewed the competition brief, team rulebook, AI collaboration guide, and the corpus itself to establish scoring priorities and the submission deadline.
+- Read the team's actual ingestion and search code (`embed_and_store.py`, `semantic_search.py`, `agent.py`, `loaders.py`, `LLM_client.py`) rather than working from assumptions.
+- Identified a real, previously unreported bug: the search agent (`semantic_search.py` / `KeywordSearcher`) was querying an in-memory `chromadb.Client()` built from 15 hardcoded placeholder chunks in `sample_data.py` ("Ashvael" test data), instead of the real persistent `kingdom_archive` collection at `./data/chroma_db` that `embed_and_store.py` actually populates with 1,117+ embedded chunks from the real 415-document corpus. This meant no question in `sample_questions.json` could be meaningfully tested until it was fixed.
+- Flagged two secondary issues found in the same code review: an embedding-model mismatch (`voyage-2` vs `voyage-3`, neither covered by the competition's free `voyage-4`-family allowance), and hardcoded Windows-only file paths in `loaders.py` (Tesseract/Poppler paths) that would break the README "clean clone and run" test on another machine.
+- Drafted `docs/decisions.md`, `docs/limitations.md`, `docs/testing.md`, `docs/architecture.md`, `README.md`, and `ai_usage/context.md` seeded from the team's real ingestion logs and actual code, with `[bracketed placeholders]` left wherever real information could only come from teammates (which AI tool each person used, actual decision dates, real `max_iterations` value, how contradicting sources are handled, the real Streamlit entry-point filename, and whether `requirements.txt` is complete).
+- Explicitly declined to guess or invent AI-usage history, decision rationale, or limitations on teammates' behalf — those sections were left as open placeholders with instructions for Person 4 to collect real answers directly from Person 1, 2, and 3.
+
+**Corrections / pushback from the human (real examples, not generic):**
+
+- Claude initially implied files had been added to the repo when they had only been created inside the chat session. Person 4 caught this directly ("There is nothing testing.md in repository...") and Claude corrected the explanation, clarifying that nothing is written to GitHub automatically and giving explicit upload/commit steps instead.
+- When Claude's first pass at `docs/limitations.md` summarized and shortened the team's raw ingestion log, Person 4 pushed back by pasting the full original log back. Claude's revised version preserved the complete raw log verbatim in an appendix instead of trimming it, per the human's explicit correction.
+- Claude flagged a discrepancy between the team rulebook (which mentioned "~5" max iterations) and the actual code default (`max_iterations: int = 3` in `agent.py`), rather than assuming the rulebook number was correct — this was surfaced as an open question for Person 2 to confirm, not resolved by guessing.
+- Claude did not fabricate the AI-tool usage of Person 1, 2, or 3, or their reasons for technical choices (e.g., ChromaDB, `reliability_tier`) — those remain placeholders pending direct answers from teammates, consistent with the rule that disclosure content must be verifiable against real chat logs and commits.
+
+---
+
+## 2. Tools used by other team members
+
+| Person | Tool used | What they used it for | One thing corrected/rejected |
+|---|---|---|---|
+| Person 1 (ingestion) | [Tool used by Person 1 — confirm] | [parsing/OCR logic — confirm] | [real example needed] |
+| Person 2 (search/agent) | [Tool used by Person 2 — confirm] | [agent loop / prompt design — confirm] | [real example needed] |
+| Person 3 (UI) | [Tool used by Person 3 — confirm] | [Streamlit UI code — confirm] | [real example needed] |
+
+*These rows are intentionally left as placeholders. Each teammate should fill in their own tool, purpose, and at least one real instance where they changed or rejected an AI suggestion — this is the part judges weight most heavily, and a fabricated entry is worse than an honest gap.*
+
+---
+
+## 3. Chat log evidence
+
+The full chat session this disclosure is based on has been exported and stored at:
+
+```
+claude_logs/2026-09-09_documentation-and-limitations.txt
+```
+
+This log shows the actual back-and-forth described above, including the human catching and correcting the AI's mistakes, as direct evidence of iteration rather than one-shot copy-paste use.
+
+---
+
+*Last updated: 9 September 2026 — Person 4. Remaining placeholders to be filled by Person 1/2/3 before final submission.*

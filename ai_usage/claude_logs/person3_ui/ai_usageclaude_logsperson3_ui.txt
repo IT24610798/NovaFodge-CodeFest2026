@@ -1,0 +1,84 @@
+I need your help for Codefest in SLIIT my team has 4 members and i have submit you the documents in the Context plz go through them and help me through the hackathon.
+We picked subtrack 1C agentic Search. We have a limited time and you have all the rules and necessary details in the context.
+we are planning to use Python, Voyage AI, ChromaDB, OpenRouter free models, Streamlit for demo. We have finished our GitHub repo. Work is also divide between 4 members
+Person 1 - handles parsing the documents and putting them into the vector database Person 2 - builds the actual search/reflect/search loop and connects the LLM Person 3 - builds the Streamlit UI Person 4 - testing, documentation, and keeping the AI usage log updated
+Please explain things step by step, one step at a time, and wait for me to say "done" before moving to the next part. Use simple language, I'm not super advanced with all these tools.
+My part is Person 3 Plz help me to nail this project. And also i need a nice color theme and i should change color easily so use primary color system and plz make saver frontend is user accepting . Simple front end plz guide me though the process
+
+Before anything else — I need to flag something important: your submission deadline is tonight, 9 September 2026, 11:30 PM. That's today. I want to make sure your team knows I saw that in the rules doc, so you can prioritize accordingly. If your repo, video, and report aren't locked down yet, those need attention alongside the UI work.
+
+Now, let's get you set up. I read through the full challenge document, so here's what matters for your part:
+
+Your role (Person 3 — Streamlit UI) needs to do two things well:
+
+Show the agentic search process clearly — Sub-track 1C is literally judged on "searching the way a human does" (search → reflect → search → answer). Judges want to see that loop happening, not just a final answer appearing. This is your biggest opportunity to impress — a UI that visualizes the reasoning steps will stand out a lot more than a plain chatbox.
+Be clean, simple, and easy to re-theme — which is exactly what you asked for.
+
+Why a "primary color system" matters (your ask): instead of hardcoding colors everywhere (in 10 different st.markdown calls), you keep all colors in ONE place. Change one line, and the whole app updates. This also makes it trivial to fix contrast/accessibility issues last-minute before your demo — no hunting through code.
+
+Quick question before Step 1 — this affects how I pace things:
+
+Where are you starting from right now?
+[No preference]
+How much time do you realistically have today before you need to record the demo video?
+1-2 hours
+
+Got it — 1-2 hours only, so I'm going to skip the slow explanations and just hand you working, runnable code right away. You can copy this straight into your repo. I'll assume you're starting fresh or close to it; if you already have an app.py, just merge the pieces in.
+
+Step 1: Theme system + working skeleton (with fake data so you can see it running immediately)
+
+To run it right now:
+
+Put these 4 files in your repo keeping the same folders (.streamlit/config.toml must stay in a folder called .streamlit).
+In a terminal: pip install -r requirements.txt
+Run: streamlit run app.py
+Type a question — you'll see a live "searching..." trail (fake steps for now), then a mock answer with source chips. That fake trail is exactly the kind of thing that shows judges your system "thinks" step by step — huge for Sub-track 1C.
+
+Why this setup, quickly:
+
+All colors live in theme.py at the top — change PRIMARY = "#7C3AED" to any hex code and your whole app re-colors itself. No hunting through code.
+The reasoning trail (search-step boxes) is separate from the final answer — this directly demonstrates the "search → reflect → search" loop the rules ask for.
+run_agentic_search() is clearly marked as fake — when Person 2's real function is ready, you swap one function call (marked INTEGRATION POINT in the file). You don't touch anything else.
+
+Try running it — say "done" when it's working on your machine (or tell me what error you hit) and I'll give you Step 2: connecting it to Person 2's real backend + a couple of UI polish touches that are fast wins for judges.
+
+App
+PY 
+Theme
+PY 
+Config
+TOML 
+Requirements
+TXT 
+
+Here's the cleaned-up version — kept only the comments that actually matter for running/setting things up:
+
+Comments stripped down to the essentials — kept the passcode-setup note (needed so you remember .streamlit/secrets.toml), and dropped everything explanatory. Syntax-checked and working. Just replace your src/ui/app.py with this and it'll run exactly the same as before.
+
+App
+PY 
+
+So now is our UI is correct is it connect to the backend as well.
+
+Good question — I can tell you the code is correctly wired to connect, but only you can confirm it's actually working right now, since I can't see your running app. Here's a quick checklist to verify:
+
+1. Restart the app fresh:
+
+python -m streamlit run src/ui/app.py
+
+2. What you should see, in order:
+
+Passcode screen → enter your passcode → "Enter"
+Either a clean welcome message (backend working ✅) or the yellow "backend didn't load correctly" warning (something still missing ❌)
+
+3. If it's clean, actually test the connection — don't just trust the absence of an error. Click one of the "Try asking" example buttons in the sidebar and confirm:
+
+A spinner appears
+After a few seconds, you get a real answer (not a mock/placeholder)
+The "🔍 How I searched for this" expander shows real search queries
+A confidence badge (green or amber) appears
+Source chips show up under the answer
+
+That combination is the real proof the UI → agent_loop.py → HybridSearcher → LLM chain is genuinely working end-to-end, not just that the page loaded without errors.
+
+Send me a screenshot of what happens when you click an example question — that's the fastest way for me to confirm it either way, or spot what's still broken.
